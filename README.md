@@ -33,7 +33,7 @@ npm start
 | ReadableStream 逐字 | `GET /api/stream-reader` | 服务端用 `ReadableStream` 逐字推送，前端逐字显示，类似打字机效果。 |
 | **混合类型流（含 meta + md）** | `GET /api/stream-mixed` | 同一流式接口内包含多种类型：每行 NDJSON 带 `type` 字段（如 `meta`、`md`、`done`），前端按类型分别处理；可流式输出并渲染 Markdown 等内容。 |
 | **SSE（EventSource）** | `GET /api/stream-sse` | 服务端 `text/event-stream` + `data: ...\n\n`，前端用 **EventSource** 订阅，收到即渲染。 |
-| **Fetch + SSE 格式** | `GET /api/stream-sse` | 同样请求 SSE 接口，用 **fetch** + `ReadableStream` 读流，前端按 SSE 格式（`data: ...\n\n`）手动解析后渲染；可带请求头、POST 等，比 EventSource 更灵活。 |
+| **Fetch + SSE 格式（多类型）** | `GET /api/stream-sse-mixed` | 服务端发带 **event** 的 SSE（`event: meta` / `event: md` / `event: done`），**data** 为 JSON；前端用 fetch 读流，按 `\n\n` 切事件，解析 event 与 data 后分支渲染（meta→标题，md→正文）。 |
 
 ## 关键代码位置
 

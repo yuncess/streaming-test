@@ -214,15 +214,29 @@ function runStreamSse() {
   };
 }
 
-// ---------- 7. Fetch + SSE 格式：用 fetch 读流，手动解析 data: ...\n\n ----------
+// ---------- 7. Fetch + SSE 格式：按 event 类型解析 data，分别渲染 meta / md / done ----------
+function parseSSEEvent(raw) {
+  const lines = raw.split('\n');
+  let eventType = '';
+  const dataLines = [];
+  for (const line of lines) {
+    if (line.startsWith('event: ')) eventType = line.slice(7).trim();
+    else if (line.startsWith('data: ')) dataLines.push(line.slice(6));
+  }
+  const data = dataLines.join('\n').trim();
+  return { event: eventType || 'message', data };
+}
+
 async function runStreamFetchSse() {
-  const out = $('stream-fetch-sse-output');
+  const titleEl = $('stream-fetch-sse-title');
+  const bodyEl = $('stream-fetch-sse-body');
   const btn = $('btn-stream-fetch-sse');
-  out.textContent = '';
+  titleEl.textContent = '';
+  bodyEl.innerHTML = '';
   btn.disabled = true;
 
   try {
-    const res = await fetch('/api/stream-sse');
+    const res = await fetch('/api/stream-sse-mixed');
     if (!res.body) throw new Error('无 body');
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
@@ -232,21 +246,34 @@ async function runStreamFetchSse() {
       const { done, value } = await reader.read();
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
-      // SSE 事件以 \n\n 分隔，解析出每个事件的 data 行
       const events = buffer.split('\n\n');
-      buffer = events.pop() || ''; // 最后一段可能不完整，留回 buffer
+      buffer = events.pop() || '';
 
       for (const raw of events) {
+        debugger;
         if (!raw.trim()) continue;
-        const dataLine = raw.split('\n').find((line) => line.startsWith('data: '));
-        if (!dataLine) continue;
-        const data = dataLine.slice(6).trim(); // 去掉 "data: "
-        if (data === '{}') continue; // done 事件
-        out.appendChild(document.createTextNode(data + '\n\n'));
+        const { event: eventType, data } = parseSSEEvent(raw);
+        if (eventType === 'done' || data === '{}') continue;
+        if (eventType === 'meta') {
+          try {
+            const obj = JSON.parse(data);
+            if (obj.title) titleEl.textContent = obj.title;
+          } catch (_) {}
+          continue;
+        }
+        if (eventType === 'md') {
+          try {
+            const obj = JSON.parse(data);
+            if (obj.content)
+              bodyEl.insertAdjacentHTML('beforeend', mdToHtml(obj.content));
+          } catch (_) {
+            bodyEl.insertAdjacentHTML('beforeend', mdToHtml(data));
+          }
+        }
       }
     }
   } catch (e) {
-    out.textContent = '错误: ' + e.message;
+    bodyEl.textContent = '错误: ' + e.message;
   } finally {
     btn.disabled = false;
   }
@@ -261,7 +288,8 @@ function clearAll() {
   $('stream-mixed-title').textContent = '';
   $('stream-mixed-body').innerHTML = '';
   $('stream-sse-output').textContent = '';
-  $('stream-fetch-sse-output').textContent = '';
+  $('stream-fetch-sse-title').textContent = '';
+  $('stream-fetch-sse-body').innerHTML = '';
 }
 
 $('btn-stream-text').addEventListener('click', runStreamText);

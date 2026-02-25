@@ -22,6 +22,7 @@ app.get('/api', (req, res) => {
       '/api/stream-reader',
       '/api/stream-mixed',
       '/api/stream-sse',
+      '/api/stream-sse-mixed',
     ],
   });
 });
@@ -50,6 +51,38 @@ app.get('/api/stream-sse', (req, res) => {
     res.write(`data: ${lines[i]}\n\n`);
     i++;
     setTimeout(send, 350);
+  };
+    send();
+});
+
+// ---------- SSE 混合类型（供 Fetch+SSE demo 按 event 类型分别处理）----------
+// 每条消息带 event: 类型，data 为 JSON 或文本，前端根据 event 分支：meta 渲染标题，md 渲染正文。
+app.get('/api/stream-sse-mixed', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders?.();
+
+  const payloads = [
+    { event: 'meta', data: JSON.stringify({ title: 'Fetch + SSE 混合类型示例', lang: 'zh' }) },
+    { event: 'md', data: JSON.stringify({ content: '# 说明\n\nSSE 里用 **event** 区分类型：\n\n' }) },
+    { event: 'md', data: JSON.stringify({ content: '- `meta`：元信息（标题等）\n' }) },
+    { event: 'md', data: JSON.stringify({ content: '- `md`：Markdown 内容块\n' }) },
+    { event: 'md', data: JSON.stringify({ content: '- `done`：结束\n\n' }) },
+    { event: 'md', data: JSON.stringify({ content: '前端按 **event** 解析 **data**（JSON），再分别渲染。' }) },
+    { event: 'done', data: '{}' },
+  ];
+  let i = 0;
+  const send = () => {
+    if (i >= payloads.length) {
+      res.end();
+      return;
+    }
+    const { event, data } = payloads[i];
+    res.write(`event: ${event}\ndata: ${data}\n\n`);
+    i++;
+    setTimeout(send, 280);
   };
   send();
 });

@@ -59,9 +59,12 @@
     </section>
 
     <section class="demo-card">
-      <h2>7. Fetch + SSE 格式</h2>
-      <p class="hint">同样请求 text/event-stream 接口，用 fetch + ReadableStream 读流，前端按 SSE 格式（data: ...\n\n）解析后渲染。</p>
-      <div id="stream-fetch-sse-output" class="output"></div>
+      <h2>7. Fetch + SSE 格式（含多类型）</h2>
+      <p class="hint">请求 SSE 接口，用 fetch 读流；按 event 类型（meta / md / done）解析 data，分别渲染标题与正文。</p>
+      <div id="stream-fetch-sse-output" class="output mixed-container">
+        <div id="stream-fetch-sse-title" class="mixed-title"></div>
+        <div id="stream-fetch-sse-body" class="mixed-body"></div>
+      </div>
       <button type="button" id="btn-stream-fetch-sse">开始 Fetch+SSE 流</button>
     </section>
 
