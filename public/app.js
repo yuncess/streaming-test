@@ -189,6 +189,31 @@ async function runStreamMixed() {
   }
 }
 
+// ---------- 6. SSE：用 EventSource 订阅，收到即渲染 ----------
+function runStreamSse() {
+  const out = $('stream-sse-output');
+  const btn = $('btn-stream-sse');
+  out.textContent = '';
+  btn.disabled = true;
+
+  const url = `${window.location.origin}/api/stream-sse`;
+  const es = new EventSource(url);
+
+  es.onmessage = (e) => {
+    const data = e.data;
+    if (data === '{}') return; // done 事件的 data
+    out.appendChild(document.createTextNode(data + '\n\n'));
+  };
+  es.addEventListener('done', () => {
+    es.close();
+    btn.disabled = false;
+  });
+  es.onerror = () => {
+    es.close();
+    btn.disabled = false;
+  };
+}
+
 // ---------- 清空 ----------
 function clearAll() {
   $('stream-text-output').textContent = '';
@@ -197,6 +222,7 @@ function clearAll() {
   $('stream-reader-output').textContent = '';
   $('stream-mixed-title').textContent = '';
   $('stream-mixed-body').innerHTML = '';
+  $('stream-sse-output').textContent = '';
 }
 
 $('btn-stream-text').addEventListener('click', runStreamText);
@@ -204,4 +230,5 @@ $('btn-stream-json').addEventListener('click', runStreamJson);
 $('btn-stream-html').addEventListener('click', runStreamHtml);
 $('btn-stream-reader').addEventListener('click', runStreamReader);
 $('btn-stream-mixed').addEventListener('click', runStreamMixed);
+$('btn-stream-sse').addEventListener('click', runStreamSse);
 $('btn-clear').addEventListener('click', clearAll);

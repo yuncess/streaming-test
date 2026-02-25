@@ -21,11 +21,45 @@ app.get('/api', (req, res) => {
       '/api/stream-html',
       '/api/stream-reader',
       '/api/stream-mixed',
+      '/api/stream-sse',
     ],
   });
 });
 
+// ---------- SSE（Server-Sent Events）流式 ----------
+// 与上面 chunked + fetch 的区别：SSE 使用标准协议 text/event-stream，前端用 EventSource 订阅，自动重连、事件类型等。
+app.get('/api/stream-sse', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no'); // 禁用 nginx 等代理的缓冲
+  res.flushHeaders?.();
+
+  const lines = [
+    'SSE 使用 text/event-stream，每条消息格式为 data: ...\\n\\n',
+    '前端用 EventSource(url) 订阅，onmessage 收到 data 内容',
+    '适合服务端单向推送：通知、日志、进度等',
+  ];
+  let i = 0;
+  const send = () => {
+    if (i >= lines.length) {
+      res.write('event: done\ndata: {}\n\n');
+      res.end();
+      return;
+    }
+    res.write(`data: ${lines[i]}\n\n`);
+    i++;
+    setTimeout(send, 350);
+  };
+  send();
+});
+
 // 流式文本
+// 实现流式接口的关键设置：
+// 1. "Transfer-Encoding: chunked" 告诉客户端，响应体会被分为一块块地发送（即分块传输），客户端可以边接收边处理数据，无需等到整体内容准备好。
+// 2. "Cache-Control: no-cache" 禁止中间缓存，确保每个块都立刻传到浏览器。
+// 3. "Connection: keep-alive" 保持连接不中断，保证数据能持续流动发送。
+// 4. 代码实现上，需多次调用 res.write(...) 发送一块数据即可，最后不要忘记 res.end() 结束响应。
 app.get('/api/stream-text', (req, res) => {
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Transfer-Encoding', 'chunked');

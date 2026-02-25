@@ -18,7 +18,12 @@ npm start
 
 浏览器打开：**http://localhost:3000**
 
-## Demo 包含的五种流式方式
+## 两种流式技术
+
+- **Chunked + Fetch**（Demo 1～5）：普通 HTTP 分块响应（`Transfer-Encoding: chunked`），前端用 `fetch` + `response.body.getReader()` 读流。灵活，可传任意格式（文本、NDJSON、HTML 等）。
+- **SSE（Server-Sent Events）**（Demo 6）：标准协议，`Content-Type: text/event-stream`，消息格式 `data: ...\n\n`；前端用 `EventSource(url)` 订阅，自动重连、支持 `event:` 类型。适合服务端单向推送（通知、进度、日志）。
+
+## Demo 包含的六种流式方式
 
 | 方式 | 接口 | 说明 |
 |------|------|------|
@@ -27,6 +32,7 @@ npm start
 | 流式 HTML | `GET /api/stream-html` | 服务端推送多块 HTML 片段，前端用 `insertAdjacentHTML` 逐块插入，类似 SSR 流式输出。 |
 | ReadableStream 逐字 | `GET /api/stream-reader` | 服务端用 `ReadableStream` 逐字推送，前端逐字显示，类似打字机效果。 |
 | **混合类型流（含 meta + md）** | `GET /api/stream-mixed` | 同一流式接口内包含多种类型：每行 NDJSON 带 `type` 字段（如 `meta`、`md`、`done`），前端按类型分别处理；可流式输出并渲染 Markdown 等内容。 |
+| **SSE** | `GET /api/stream-sse` | 使用 **Server-Sent Events**：服务端 `text/event-stream` + `data: ...\n\n`，前端 `EventSource` 订阅，收到即渲染。 |
 
 ## 关键代码位置
 
@@ -39,3 +45,4 @@ npm start
 
 - 浏览器：[Streams API](https://developer.mozilla.org/zh-CN/docs/Web/API/Streams_API)、[fetch 与 ReadableStream](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API/Using_Fetch#body)。
 - 框架：React 18 [Suspense 流式 SSR](https://react.dev/reference/react-dom/server)、Next.js [Streaming and Suspense](https://nextjs.org/docs/app/building-your-application/routing/loading-ui-and-streaming)。
+- SSE：[Server-Sent Events - MDN](https://developer.mozilla.org/zh-CN/docs/Web/API/Server-sent_events)、[EventSource](https://developer.mozilla.org/zh-CN/docs/Web/API/EventSource)。
