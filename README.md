@@ -23,7 +23,7 @@ npm start
 - **Chunked + Fetch**（Demo 1～5）：普通 HTTP 分块响应（`Transfer-Encoding: chunked`），前端用 `fetch` + `response.body.getReader()` 读流。灵活，可传任意格式（文本、NDJSON、HTML 等）。
 - **SSE（Server-Sent Events）**（Demo 6）：标准协议，`Content-Type: text/event-stream`，消息格式 `data: ...\n\n`；前端用 `EventSource(url)` 订阅，自动重连、支持 `event:` 类型。适合服务端单向推送（通知、进度、日志）。
 
-## Demo 包含的六种流式方式
+## Demo 包含的七种流式方式
 
 | 方式 | 接口 | 说明 |
 |------|------|------|
@@ -32,7 +32,8 @@ npm start
 | 流式 HTML | `GET /api/stream-html` | 服务端推送多块 HTML 片段，前端用 `insertAdjacentHTML` 逐块插入，类似 SSR 流式输出。 |
 | ReadableStream 逐字 | `GET /api/stream-reader` | 服务端用 `ReadableStream` 逐字推送，前端逐字显示，类似打字机效果。 |
 | **混合类型流（含 meta + md）** | `GET /api/stream-mixed` | 同一流式接口内包含多种类型：每行 NDJSON 带 `type` 字段（如 `meta`、`md`、`done`），前端按类型分别处理；可流式输出并渲染 Markdown 等内容。 |
-| **SSE** | `GET /api/stream-sse` | 使用 **Server-Sent Events**：服务端 `text/event-stream` + `data: ...\n\n`，前端 `EventSource` 订阅，收到即渲染。 |
+| **SSE（EventSource）** | `GET /api/stream-sse` | 服务端 `text/event-stream` + `data: ...\n\n`，前端用 **EventSource** 订阅，收到即渲染。 |
+| **Fetch + SSE 格式** | `GET /api/stream-sse` | 同样请求 SSE 接口，用 **fetch** + `ReadableStream` 读流，前端按 SSE 格式（`data: ...\n\n`）手动解析后渲染；可带请求头、POST 等，比 EventSource 更灵活。 |
 
 ## 关键代码位置
 

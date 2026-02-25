@@ -52,10 +52,17 @@
     </section>
 
     <section class="demo-card">
-      <h2>6. SSE（Server-Sent Events）</h2>
+      <h2>6. SSE（EventSource）</h2>
       <p class="hint">使用 EventSource 订阅，Content-Type: text/event-stream，标准服务端推送协议。</p>
       <div id="stream-sse-output" class="output"></div>
       <button type="button" id="btn-stream-sse">开始 SSE 流</button>
+    </section>
+
+    <section class="demo-card">
+      <h2>7. Fetch + SSE 格式</h2>
+      <p class="hint">同样请求 text/event-stream 接口，用 fetch + ReadableStream 读流，前端按 SSE 格式（data: ...\n\n）解析后渲染。</p>
+      <div id="stream-fetch-sse-output" class="output"></div>
+      <button type="button" id="btn-stream-fetch-sse">开始 Fetch+SSE 流</button>
     </section>
 
     <div class="actions">

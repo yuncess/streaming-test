@@ -214,6 +214,44 @@ function runStreamSse() {
   };
 }
 
+// ---------- 7. Fetch + SSE 格式：用 fetch 读流，手动解析 data: ...\n\n ----------
+async function runStreamFetchSse() {
+  const out = $('stream-fetch-sse-output');
+  const btn = $('btn-stream-fetch-sse');
+  out.textContent = '';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/stream-sse');
+    if (!res.body) throw new Error('无 body');
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      // SSE 事件以 \n\n 分隔，解析出每个事件的 data 行
+      const events = buffer.split('\n\n');
+      buffer = events.pop() || ''; // 最后一段可能不完整，留回 buffer
+
+      for (const raw of events) {
+        if (!raw.trim()) continue;
+        const dataLine = raw.split('\n').find((line) => line.startsWith('data: '));
+        if (!dataLine) continue;
+        const data = dataLine.slice(6).trim(); // 去掉 "data: "
+        if (data === '{}') continue; // done 事件
+        out.appendChild(document.createTextNode(data + '\n\n'));
+      }
+    }
+  } catch (e) {
+    out.textContent = '错误: ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 // ---------- 清空 ----------
 function clearAll() {
   $('stream-text-output').textContent = '';
@@ -223,6 +261,7 @@ function clearAll() {
   $('stream-mixed-title').textContent = '';
   $('stream-mixed-body').innerHTML = '';
   $('stream-sse-output').textContent = '';
+  $('stream-fetch-sse-output').textContent = '';
 }
 
 $('btn-stream-text').addEventListener('click', runStreamText);
@@ -231,4 +270,5 @@ $('btn-stream-html').addEventListener('click', runStreamHtml);
 $('btn-stream-reader').addEventListener('click', runStreamReader);
 $('btn-stream-mixed').addEventListener('click', runStreamMixed);
 $('btn-stream-sse').addEventListener('click', runStreamSse);
+$('btn-stream-fetch-sse').addEventListener('click', runStreamFetchSse);
 $('btn-clear').addEventListener('click', clearAll);
