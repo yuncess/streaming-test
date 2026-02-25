@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>流式渲染 (Streaming) Demo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>流式渲染 (Streaming) Demo</h1>
+      <p class="subtitle">服务端分块发送，前端逐步渲染</p>
+    </header>
+
+    <section class="demo-card">
+      <h2>1. 流式文本</h2>
+      <p class="hint">模拟逐句返回，每句到达后立即追加到页面。</p>
+      <div id="stream-text-output" class="output"></div>
+      <button type="button" id="btn-stream-text">开始流式文本</button>
+    </section>
+
+    <section class="demo-card">
+      <h2>2. 流式 JSON (NDJSON)</h2>
+      <p class="hint">每行一个 JSON，收到一行就渲染一条。</p>
+      <ul id="stream-json-output" class="output list"></ul>
+      <button type="button" id="btn-stream-json">开始流式 JSON</button>
+    </section>
+
+    <section class="demo-card">
+      <h2>3. 流式 HTML 片段</h2>
+      <p class="hint">服务端推送 HTML 块，前端直接插入 DOM。</p>
+      <div id="stream-html-output" class="output html-container"></div>
+      <button type="button" id="btn-stream-html">开始流式 HTML</button>
+    </section>
+
+    <section class="demo-card">
+      <h2>4. ReadableStream 逐字输出</h2>
+      <p class="hint">使用 Fetch + ReadableStream 逐字显示。</p>
+      <div id="stream-reader-output" class="output"></div>
+      <button type="button" id="btn-stream-reader">开始逐字流</button>
+    </section>
+
+    <section class="demo-card">
+      <h2>5. 混合类型流（含 meta + md）</h2>
+      <p class="hint">同一流里按 type 区分：meta 显示为标题，md 流式渲染为 Markdown。</p>
+      <div id="stream-mixed-output" class="output mixed-container">
+        <div id="stream-mixed-title" class="mixed-title"></div>
+        <div id="stream-mixed-body" class="mixed-body"></div>
+      </div>
+      <button type="button" id="btn-stream-mixed">开始混合类型流</button>
+    </section>
+
+    <div class="actions">
+      <button type="button" id="btn-clear">清空所有输出</button>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

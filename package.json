@@ -1,0 +1,13 @@
+{
+  "name": "streaming-demo",
+  "version": "1.0.0",
+  "description": "流式渲染 (Streaming) 学习 Demo",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
